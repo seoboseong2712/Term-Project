@@ -3,9 +3,9 @@ from pygame.locals import *
 import random, time
 
 # 게임화면 설정
-FPS = 120 
-SCREENWIDTH = 1200
-SCREENHEIGHT = 800
+FPS = 120 # 프레임
+SCREENWIDTH = 1200 # 창 너비
+SCREENHEIGHT = 800 # 창 높이
 
 #색 설정
 WHITE = (255,255,255)
@@ -24,6 +24,7 @@ def main():
     SCREEN = pygame.display.set_mode((SCREENWIDTH,SCREENHEIGHT))
     FONT = pygame.font.SysFont('Verdana', 20) # 순서대로 글자 종류, 크기
 
+    # 게임이 끝난후 표기될 문구
     global game_over, clear1, clear2, thanks, creator
 
     game_over = pygame.font.SysFont('Verdana', 60).render("GAME OVER", True, BLACK)
@@ -34,11 +35,11 @@ def main():
 
     pygame.display.set_caption('Growing Fish Game') # 창 이름 설정
     
-    background = pygame.image.load('deepSea.jpg') # 화면 이미지 넣기, 출처 https://flickr.com/photos/td246/6405111503/
+    background = pygame.image.load('deepSea.jpg') # 화면 이미지 넣기
     SCREEN.blit(background, (0, 0)) #왼쪽 위 꼭지점좌표 기준 
     pygame.display.flip()
 
-    gameStart()
+    gameStart() #시작화면 띄우기
     SCREEN.fill((0, 0, 0))
 
     #시작 화면의 텍스트를 없애고 게임 시작
@@ -47,8 +48,7 @@ def main():
 
     pygame.display.update()
 
-    #개체 생성 및 그룹화
-    
+    #게임 진행
     GrowingFishGame()
 
 
@@ -57,6 +57,7 @@ def terminateGame(): # 종료 함수
     sys.exit()
 
 def gameStart(): #시작 화면을 보여주면서 시작 (완료)
+    #시작 화면에 띄워질 문구
     titleText = pygame.font.SysFont('Verdana', 80).render('Growing Fish Game', True, YELLOW, CYAN)
     toStart = pygame.font.SysFont('Verdana', 20).render('Press Any Key to Start', True, WHITE)
     exitGame = pygame.font.SysFont('Verdana', 20).render('Press Esc Key to Exit', True, GRAY)
@@ -65,12 +66,12 @@ def gameStart(): #시작 화면을 보여주면서 시작 (완료)
     SCREEN.blit(toStart, (470, 600))
     SCREEN.blit(exitGame, (0,0))
     while True:
-        if KeyPress():
+        if KeyPress(): #Esc 키를 제외한 아무 키를 눌러 게임 시작
             pygame.event.get()
             return
         pygame.display.update()
 
-def KeyPress(): #완료
+def KeyPress(): # 게임 시작을 위한 함수
     if len(pygame.event.get(QUIT)) > 0:
         terminateGame()
 
@@ -82,7 +83,7 @@ def KeyPress(): #완료
     return isPressed[0].key
     
 
-class Fish(pygame.sprite.Sprite): #완료
+class Fish(pygame.sprite.Sprite): #플레이어와 적 클래스가 상속받을 물고기 클래스
     def __init__(self, img, level, score):
         super().__init__()
         # 이미지 불러오기
@@ -95,13 +96,13 @@ class Fish(pygame.sprite.Sprite): #완료
         self.score = score # 점수, 플레이어는 점수를 얻고 적은 먹혔을 때 점수를 줌
         self.invincible = True
 
-class Player(Fish): # 플레이어 클래스()
+class Player(Fish): # 플레이어 클래스
     def __init__(self):
         self.levelImages = ["Level1playerFish.png", "Level2playerFish.png", "Level3playerFish.png", "Level4playerFish.png", "Level5playerFish.png",]
         super().__init__(self.levelImages[0], 1, 0)
         self.lives = 3
         self.items=[1, 1] # 생명 증가/무적(5초) 아이템
-        self.target_scores = [500, 1000, 2000, 3000, 4000, 0] #최대 5단계까지 (원래 값: 1500, 3500, 6000, 1000, 16000)
+        self.target_scores = [1500, 3500, 6000, 10000, 16000, 0] #최대 5단계까지 (원래 값: 1500, 3500, 6000, 1000, 16000)
         self.rect.center = (SCREENWIDTH/2, SCREENHEIGHT/2)
         self.invincible = True
 
@@ -133,12 +134,14 @@ class Player(Fish): # 플레이어 클래스()
                 position_player = self.rect.center
                 return position_player
         
+    #무적 아이템 사용
     def InvincibleItem(self):
         if pygame.key.get_pressed()[K_1]:
             if self.items[0] > 0:
                 return True
         return False
 
+    # 생명추가 아이템 사용
     def LivesUPItem(self):
         if pygame.key.get_pressed()[K_2]:
             if self.items[1] > 0:
@@ -162,7 +165,7 @@ class Player(Fish): # 플레이어 클래스()
 class Enemy(Fish):
     def __init__(self, level):
         enemyImg="Level1Fish.png"
-        #레벨에 따라서 이미지가 설정됨
+        #레벨에 따라서 이미지가 설정됨(정확히는 크기가 커짐)
         if level == 1:
             enemyImg = "Level1Fish.png"
         elif level == 2:
@@ -181,6 +184,7 @@ class Enemy(Fish):
         speed = 3
         direction = random.randint(0,100)
         
+        #위치 이동은 랜덤으로, 확률은 균일
         if self.rect.top > 0:
             if direction in range(0, 25): # 위쪽으로 이동
                 self.rect.move_ip(0, speed*(-1))
@@ -227,7 +231,7 @@ def GrowingFishGame():
     #1초마다 적 1개씩 생성
     start = pygame.time.get_ticks()
 
-    invincibleStart = pygame.time.get_ticks() # 처음에는 무적
+    invincibleStart = pygame.time.get_ticks() # 플레이어의 무적시간, 처음에는 무적
     invincibleTime = pygame.time.get_ticks()
 
     #게임 루프
@@ -283,7 +287,7 @@ def GrowingFishGame():
 
         count2 = 0 #플레이어보다 레벨이 2 높은 물고기수
         count1 = 0 #플레이어보다 레벨이 1 높은 물고기수
-        # 1초마다 적 생성
+        # 1초마다 적 생성(위치는 랜덤)
         if len(All_groups) < 20:
             if(now-start > 1000):
                 start = now
