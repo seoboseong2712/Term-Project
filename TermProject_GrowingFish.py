@@ -102,7 +102,7 @@ class Player(Fish): # 플레이어 클래스
         super().__init__(self.levelImages[0], 1, 0)
         self.lives = 3
         self.items=[1, 1] # 생명 증가/무적(5초) 아이템
-        self.target_scores = [1500, 3500, 6000, 10000, 16000, 0] #최대 5단계까지 (원래 값: 1500, 3500, 6000, 1000, 16000)
+        self.target_scores = [1000, 3000, 5000, 70000, 10000, 0] #최대 5단계까지
         self.rect.center = (SCREENWIDTH/2, SCREENHEIGHT/2)
         self.invincible = True
 
